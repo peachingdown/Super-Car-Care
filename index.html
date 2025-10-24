@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Car Care - บริการดูแลผู้สูงอายุ</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Prompt Font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* กำหนดฟอนต์ Prompt เป็นฟอนต์หลัก */
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #FFF7FA; /* Lightest pastel pink background */
+            color: #333;
+        }
+        .text-pink-primary {
+            color: #E91E63; /* Deep Pink for strong accents */
+        }
+        .bg-pink-pastel {
+            background-color: #FADADD; /* Pastel Pink background */
+        }
+        .btn-primary {
+            background-color: #EC407A; /* Medium Pink for buttons */
+            transition: transform 0.1s;
+        }
+        .btn-primary:hover {
+            background-color: #D81B60;
+            transform: translateY(-1px);
+        }
+        /* Custom scrollbar for history panel */
+        #history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        #history-list::-webkit-scrollbar-thumb {
+            background-color: #F8BBD0;
+            border-radius: 3px;
+        }
+        #history-list::-webkit-scrollbar-track {
+            background-color: #FFE0F0;
+        }
+        /* Hide all views initially */
+        .page-view {
+            display: none;
+        }
+        /* Show the active view */
+        .page-view.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-primary" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l.493-.493a1 1 0 001.414 0l1.414 1.414a1 1 0 001.414 0l1.414-1.414a1 1 0 001.414 0l1.414 1.414a1 1 0 001.414 0l.493.493a1 1 0 001.17-1.409l-7-14zM10 10a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+                <span class="text-xl font-bold text-pink-primary">Super Car Care</span>
+            </div>
+            <div id="nav-menu" class="hidden md:flex flex-col md:flex-row md:space-x-6 space-y-2 md:space-y-0 mt-3 md:mt-0 w-full md:w-auto">
+                <button onclick="navigate('home')" class="nav-link text-gray-600 hover:text-pink-primary font-medium">หน้าหลัก</button>
+                <button onclick="navigate('services')" class="nav-link text-gray-600 hover:text-pink-primary font-medium">บริการของเรา</button>
+                <button onclick="navigate('goals')" class="nav-link text-gray-600 hover:text-pink-primary font-medium">เป้าหมายของเรา</button>
+                <button onclick="navigate('register')" class="nav-link btn-primary text-white px-4 py-2 rounded-full shadow-lg">ลงชื่อเข้าใช้</button>
+                <button onclick="navigate('history')" class="nav-link text-gray-600 hover:text-pink-primary font-medium">ประวัติการลงทะเบียน</button>
+                <span id="user-info" class="text-xs text-gray-500 flex items-center justify-center md:justify-start"></span>
+            </div>
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md text-pink-primary hover:bg-pink-100 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+        </nav>
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden px-4 pb-4">
+            <button onclick="navigate('home')" class="block text-gray-600 hover:text-pink-primary font-medium py-2">หน้าหลัก</button>
+            <button onclick="navigate('services')" class="block text-gray-600 hover:text-pink-primary font-medium py-2">บริการของเรา</button>
+            <button onclick="navigate('goals')" class="block text-gray-600 hover:text-pink-primary font-medium py-2">เป้าหมายของเรา</button>
+            <button onclick="navigate('register')" class="block btn-primary text-white px-4 py-2 rounded-full shadow-lg mt-2">ลงชื่อเข้าใช้</button>
+            <button onclick="navigate('history')" class="block text-gray-600 hover:text-pink-primary font-medium py-2">ประวัติการลงทะเบียน</button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="app-container" class="flex-grow container mx-auto p-4 sm:p-8">
+
+        <!-- Home View -->
+        <section id="home-view" class="page-view active">
+            <div class="text-center py-16 bg-pink-100 rounded-xl shadow-lg">
+                <h1 class="text-4xl sm:text-5xl font-extrabold text-pink-primary mb-4">Super Car Care</h1>
+                <p class="text-xl text-gray-700 max-w-2xl mx-auto">
+                    ยกระดับการเดินทางไปโรงพยาบาลของผู้สูงอายุให้สะดวก ปลอดภัย และไร้กังวล
+                </p>
+                <button onclick="navigate('register')" class="mt-8 btn-primary text-white font-semibold px-8 py-3 rounded-full shadow-xl hover:shadow-2xl">
+                    ลงทะเบียนรับบริการทันที
+                </button>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mt-12">
+                <div class="p-6 bg-white rounded-xl shadow-lg text-center hover:shadow-xl transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-pink-primary mx-auto mb-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-8a1 1 0 00-2 0v2a1 1 0 102 0v-2zm4-2a1 1 0 00-2 0v4a1 1 0 102 0V8z" clip-rule="evenodd" />
+                    </svg>
+                    <h3 class="text-xl font-semibold mb-2 text-pink-primary">ลดเวลารอ</h3>
+                    <p class="text-gray-600">ช่วยประสานงานคิวตรวจ ลดความแออัดและเวลาที่ต้องรอในโรงพยาบาล</p>
+                </div>
+                <div class="p-6 bg-white rounded-xl shadow-lg text-center hover:shadow-xl transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-pink-primary mx-auto mb-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707l-.707-.707V8a6 6 0 00-6-6zM12 16a2 2 0 11-4 0h4z" />
+                    </svg>
+                    <h3 class="text-xl font-semibold mb-2 text-pink-primary">เดินทางสะดวก</h3>
+                    <p class="text-gray-600">มีรถรับ-ส่งถึงบ้าน พร้อมเจ้าหน้าที่ดูแลตลอดการเดินทาง</p>
+                </div>
+                <div class="p-6 bg-white rounded-xl shadow-lg text-center hover:shadow-xl transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-pink-primary mx-auto mb-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-2-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <h3 class="text-xl font-semibold mb-2 text-pink-primary">ลดภาระครอบครัว</h3>
+                    <p class="text-gray-600">ช่วยจัดการเรื่องการเดินทางและการประสานงานในโรงพยาบาลแทนคุณ</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Our Services View -->
+        <section id="services-view" class="page-view">
+            <h2 class="text-3xl font-bold text-pink-primary mb-8 border-b-2 border-pink-200 pb-2">บริการของเรา</h2>
+            <div class="space-y-8 max-w-4xl mx-auto">
+                <div class="p-6 bg-white rounded-xl shadow-lg flex flex-col md:flex-row items-start space-x-0 md:space-x-6">
+                    <div class="flex-shrink-0 mb-4 md:mb-0">
+                         <div class="h-12 w-12 bg-pink-pastel rounded-full flex items-center justify-center text-pink-primary font-bold text-xl">1</div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-800 mb-2">จัดรถรับ-ส่งถึงที่หมาย</h3>
+                        <p class="text-gray-600">
+                            รถยนต์ส่วนตัวที่สะดวกสบายพร้อมพนักงานขับรถมืออาชีพ จะไปรับผู้สูงอายุจากที่พักอาศัย (หมู่บ้าน) และส่งตรงถึงประตูโรงพยาบาล รวมถึงรับกลับจนถึงบ้านอย่างปลอดภัยหลังเสร็จสิ้นการรักษา
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-white rounded-xl shadow-lg flex flex-col md:flex-row items-start space-x-0 md:space-x-6">
+                    <div class="flex-shrink-0 mb-4 md:mb-0">
+                         <div class="h-12 w-12 bg-pink-pastel rounded-full flex items-center justify-center text-pink-primary font-bold text-xl">2</div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-800 mb-2">เจ้าหน้าที่ดูแลระหว่างเดินทาง</h3>
+                        <p class="text-gray-600">
+                            มีเจ้าหน้าที่หรืออาสาสมัครที่ผ่านการอบรมคอยดูแลและให้ความช่วยเหลือผู้สูงอายุตลอดการเดินทาง เพื่อให้รู้สึกอุ่นใจและได้รับการดูแลอย่างใกล้ชิด
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-white rounded-xl shadow-lg flex flex-col md:flex-row items-start space-x-0 md:space-x-6">
+                    <div class="flex-shrink-0 mb-4 md:mb-0">
+                         <div class="h-12 w-12 bg-pink-pastel rounded-full flex items-center justify-center text-pink-primary font-bold text-xl">3</div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-800 mb-2">ประสานงานคิวและจุดลงทะเบียน</h3>
+                        <p class="text-gray-600">
+                            เจ้าหน้าที่จะช่วยประสานงานกับจุดลงทะเบียนของโรงพยาบาล จัดการเรื่องเอกสาร และช่วยติดตามคิวตรวจ ทำให้ผู้สูงอายุไม่ต้องยืนรอนานหรือสับสนในขั้นตอน
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Our Goals View -->
+        <section id="goals-view" class="page-view">
+            <h2 class="text-3xl font-bold text-pink-primary mb-8 border-b-2 border-pink-200 pb-2">เป้าหมายของเรา</h2>
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+
+                <div class="bg-pink-pastel p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold text-pink-primary mb-3">1. เพื่อผู้สูงอายุ</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                        <li>ได้รับการดูแลเอาใจใส่ตลอดการเดินทาง</li>
+                        <li>เดินทางไป-กลับโรงพยาบาลได้อย่างสะดวกและปลอดภัย</li>
+                        <li>ลดความเครียดและความกังวลในการเข้าถึงบริการทางการแพทย์</li>
+                    </ul>
+                </div>
+
+                <div class="bg-pink-pastel p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold text-pink-primary mb-3">2. เพื่อครอบครัว</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                        <li>ลดภาระและความกังวลในการพาผู้สูงอายุไปโรงพยาบาล</li>
+                        <li>ครอบครัวสามารถจัดสรรเวลาทำงานและดูแลได้อย่างมีประสิทธิภาพ</li>
+                        <li>มั่นใจได้ว่าบุคคลอันเป็นที่รักได้รับการดูแลอย่างดี</li>
+                    </ul>
+                </div>
+
+                <div class="bg-pink-pastel p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold text-pink-primary mb-3">3. เพื่อสังคมและโรงพยาบาล</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                        <li>ช่วยให้ผู้สูงอายุเข้าถึงบริการทางการแพทย์ได้อย่างทั่วถึง</li>
+                        <li>ลดความแออัดและลดเวลารอคิวในพื้นที่โรงพยาบาล</li>
+                        <li>สนับสนุนการจัดการทรัพยากรของโรงพยาบาลให้มีประสิทธิภาพยิ่งขึ้น</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sign Up/Register View -->
+        <section id="register-view" class="page-view max-w-2xl mx-auto">
+            <div class="p-8 bg-white rounded-xl shadow-2xl">
+                <h2 class="text-3xl font-bold text-pink-primary mb-6">ลงทะเบียนใช้บริการ</h2>
+                <p class="text-gray-600 mb-6">กรุณากรอกข้อมูลเพื่อขอรับบริการรับ-ส่งถึงโรงพยาบาลพร้อมเจ้าหน้าที่ดูแล</p>
+
+                <form id="registration-form">
+                    <div class="grid sm:grid-cols-2 gap-4 mb-4">
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">ชื่อจริง: <span class="text-red-500">*</span></span>
+                            <input type="text" id="reg-name" required class="mt-1 block w-full rounded-md border-pink-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200 focus:ring-opacity-50 p-2">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">นามสกุล: <span class="text-red-500">*</span></span>
+                            <input type="text" id="reg-surname" required class="mt-1 block w-full rounded-md border-pink-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200 focus:ring-opacity-50 p-2">
+                        </label>
+                    </div>
+
+                    <label class="block mb-4">
+                        <span class="text-gray-700 font-medium">เบอร์โทรศัพท์หลัก: <span class="text-red-500">*</span></span>
+                        <input type="tel" id="reg-phone" required class="mt-1 block w-full rounded-md border-pink-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200 focus:ring-opacity-50 p-2">
+                    </label>
+
+                    <label class="block mb-4">
+                        <span class="text-gray-700 font-medium">ที่อยู่สำหรับรับ-ส่ง: <span class="text-red-500">*</span></span>
+                        <textarea id="reg-address" rows="3" required class="mt-1 block w-full rounded-md border-pink-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200 focus:ring-opacity-50 p-2"></textarea>
+                    </label>
+
+                    <label class="block mb-4">
+                        <span class="text-gray-700 font-medium">โรงพยาบาลที่ต้องการใช้บริการ: <span class="text-red-500">*</span></span>
+                        <input type="text" id="reg-hospital" required class="mt-1 block w-full rounded-md border-pink-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200 focus:ring-opacity-50 p-2" placeholder="เช่น โรงพยาบาลศิริราช">
+                    </label>
+                    
+                    <!-- *** เปลี่ยนจาก datetime-local เป็นแยก วันที่ และ เวลา *** -->
+                    <div class="grid sm:grid-cols-2 gap-4 mb-4">
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">วันที่นัดหมาย: <span class="text-red-500">*</span></span>
+                            <input type="date" id="reg-appointment-date" required class="mt-1 block w-full rounded-md border-pink-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200 focus:ring-opacity-50 p-2">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">เวลาที่ต้องการใช้บริการ : <span class="text-red-500">*</span></span>
+                            <input type="time" id="reg-appointment-time" required class="mt-1 block w-full rounded-md border-pink-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200 focus:ring-opacity-50 p-2">
+                        </label>
+                    </div>
+
+                    <!-- *** เปลี่ยนเป็นแนบไฟล์ (แต่รับ URL/Text เนื่องจากข้อจำกัด) *** -->
+                    <label class="block mb-6">
+                        <span class="text-gray-700 font-medium">แนบใบนัด (ไฟล์):</span>
+                        <input type="text" id="reg-slip-text" class="mt-1 block w-full rounded-md border-pink-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200 focus:ring-opacity-50 p-2" placeholder="กรุณาระบุลิงก์ Google Drive/Dropbox หรือรายละเอียดที่อยู่ของไฟล์">
+                        <small class="text-gray-500 mt-1 block">เนื่องจากข้อจำกัด กรุณาแนบเป็นลิงก์ไฟล์รูปภาพหรือรายละเอียด</small>
+                    </label>
+
+                    <button type="submit" class="w-full btn-primary text-white font-semibold py-3 rounded-md shadow-xl">
+                        <span id="reg-submit-text">ยืนยันการลงทะเบียน</span>
+                        <span id="reg-loading-spinner" class="hidden animate-spin h-5 w-5 border-2 border-t-white border-pink-400 rounded-full mx-auto"></span>
+                    </button>
+                </form>
+            </div>
+            <!-- Message Modal -->
+            <div id="reg-message-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <h3 id="reg-modal-title" class="text-xl font-bold mb-4 text-pink-primary"></h3>
+                    <p id="reg-modal-body" class="text-gray-700 mb-6"></p>
+                    <div class="text-right">
+                        <button onclick="hideModal()" class="btn-primary text-white font-semibold py-2 px-4 rounded-full">
+                            ปิด
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Registration History View -->
+        <section id="history-view" class="page-view max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-pink-primary mb-8 border-b-2 border-pink-200 pb-2">ประวัติการลงทะเบียนใช้งานของคุณ</h2>
+
+            <div id="history-panel" class="bg-white rounded-xl shadow-2xl p-6 min-h-[300px]">
+                <p id="history-loading" class="text-center text-gray-500">กำลังโหลดข้อมูลประวัติการลงทะเบียน...</p>
+                <div id="history-list" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                    <!-- History items will be dynamically inserted here -->
+                </div>
+                <p id="history-empty" class="hidden text-center text-gray-500 mt-4 p-4 border border-pink-200 rounded-lg">คุณยังไม่มีประวัติการลงทะเบียนใช้งาน</p>
+                <p class="text-xs text-gray-400 mt-4 pt-4 border-t border-pink-100">User ID: <span id="display-user-id">...</span></p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-pink-pastel text-center p-4 mt-8 shadow-inner">
+        <p class="text-gray-700 text-sm">&copy; 2024 Super Car Care. ดูแลด้วยความใส่ใจเพื่อผู้สูงอายุ</p>
+    </footer>
+
+    <!-- Firebase Imports and Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, onSnapshot, collection, query, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Set log level to Debug for better console output
+        setLogLevel('Debug');
+
+        // --- Global Variables (Provided by Canvas Environment) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-supercar-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db = null;
+        let auth = null;
+        let userId = null;
+        let authReady = false;
+
+        // --- UI Elements ---
+        const appContainer = document.getElementById('app-container');
+        const historyList = document.getElementById('history-list');
+        const historyLoading = document.getElementById('history-loading');
+        const historyEmpty = document.getElementById('history-empty');
+        const regForm = document.getElementById('registration-form');
+        const regSubmitText = document.getElementById('reg-submit-text');
+        const regLoadingSpinner = document.getElementById('reg-loading-spinner');
+        const displayUserId = document.getElementById('display-user-id');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        // --- Navigation Logic ---
+        window.navigate = function(viewId) {
+            document.querySelectorAll('.page-view').forEach(view => {
+                view.classList.remove('active');
+            });
+            const targetView = document.getElementById(viewId + '-view');
+            if (targetView) {
+                targetView.classList.add('active');
+            }
+
+            // Close mobile menu on navigation
+            mobileMenu.classList.add('hidden');
+        }
+
+        // --- Modal Functions ---
+        const regMessageModal = document.getElementById('reg-message-modal');
+        const regModalTitle = document.getElementById('reg-modal-title');
+        const regModalBody = document.getElementById('reg-modal-body');
+
+        function showModal(title, message) {
+            regModalTitle.textContent = title;
+            regModalBody.textContent = message;
+            regMessageModal.classList.remove('hidden');
+        }
+
+        window.hideModal = function() {
+            regMessageModal.classList.add('hidden');
+        }
+
+        // --- Firebase Initialization and Auth ---
+        if (firebaseConfig) {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            console.log("Firebase Initialized.");
+
+            // 1. Authentication Check
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    authReady = true;
+                    console.log("Authenticated User ID:", userId);
+                    displayUserId.textContent = userId;
+                    // Start listening to history once auth is ready
+                    setupHistoryListener();
+                } else {
+                    // Sign in anonymously if no token, or use custom token
+                    try {
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) {
+                        console.error("Firebase Auth Error:", error);
+                        // Fallback user ID if sign-in fails
+                        userId = crypto.randomUUID();
+                        authReady = true;
+                        displayUserId.textContent = `Anon (${userId.substring(0, 8)}...) - Auth Failed`;
+                        setupHistoryListener(); // Still try to setup, though it might fail security rules
+                    }
+                }
+            });
+        } else {
+            console.error("Firebase configuration is missing. Data storage will not work.");
+            userId = 'no-firebase-config';
+            authReady = true;
+            displayUserId.textContent = userId;
+        }
+
+        // --- Firestore Data Operations ---
+
+        function getPrivateCollectionPath(collectionName) {
+            return `artifacts/${appId}/users/${userId}/${collectionName}`;
+        }
+
+        // 2. Handle Registration Form Submission
+        regForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!authReady || !db) {
+                showModal("ข้อผิดพลาด", "ระบบยังไม่พร้อมสำหรับการบันทึกข้อมูล กรุณาลองใหม่ในภายหลัง");
+                return;
+            }
+
+            regSubmitText.classList.add('hidden');
+            regLoadingSpinner.classList.remove('hidden');
+
+            const name = document.getElementById('reg-name').value;
+            const surname = document.getElementById('reg-surname').value;
+            const phone = document.getElementById('reg-phone').value;
+            const address = document.getElementById('reg-address').value;
+            const hospital = document.getElementById('reg-hospital').value;
+            
+            // *** รับข้อมูลแยกเป็น วันที่ และ เวลา ***
+            const appointmentDate = document.getElementById('reg-appointment-date').value;
+            const appointmentTime = document.getElementById('reg-appointment-time').value;
+            
+            // *** รับข้อความ/ลิงก์ใบนัด ***
+            const slipText = document.getElementById('reg-slip-text').value;
+
+            const registrationData = {
+                name: name.trim(),
+                surname: surname.trim(),
+                phone: phone.trim(),
+                address: address.trim(),
+                hospital: hospital.trim(),
+                appointmentDate: appointmentDate, // YYYY-MM-DD
+                appointmentTime: appointmentTime, // HH:MM
+                slipText: slipText.trim() || 'ไม่มีข้อมูลใบนัด (แนบเป็นลิงก์ไฟล์)', // เปลี่ยนชื่อ key
+                status: 'รอการยืนยัน',
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                const colRef = collection(db, getPrivateCollectionPath('super_car_care_requests'));
+                await addDoc(colRef, registrationData);
+
+                showModal(
+                    "ลงทะเบียนสำเร็จ!",
+                    "คำขอรับบริการของคุณถูกบันทึกเรียบร้อยแล้ว เจ้าหน้าที่จะติดต่อกลับเพื่อยืนยันการนัดหมายโดยเร็วที่สุด"
+                );
+                regForm.reset();
+                navigate('history'); // Navigate to history to see the new entry
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                showModal("ข้อผิดพลาดในการบันทึก", `ไม่สามารถบันทึกข้อมูลได้: ${error.message}`);
+            } finally {
+                regSubmitText.classList.remove('hidden');
+                regLoadingSpinner.classList.add('hidden');
+            }
+        });
+
+        // 3. Setup Real-time History Listener
+        let unsubscribeHistory = null;
+        function setupHistoryListener() {
+            if (unsubscribeHistory) {
+                unsubscribeHistory(); // Unsubscribe from previous listener if any
+            }
+
+            if (db && authReady) {
+                const colPath = getPrivateCollectionPath('super_car_care_requests');
+                const q = query(collection(db, colPath));
+
+                unsubscribeHistory = onSnapshot(q, (querySnapshot) => {
+                    const requests = [];
+                    querySnapshot.forEach((doc) => {
+                        requests.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    // Sort by creation date descending (newest first)
+                    requests.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+
+                    renderHistory(requests);
+                }, (error) => {
+                    console.error("Error listening to history: ", error);
+                    historyLoading.textContent = "ไม่สามารถโหลดข้อมูลประวัติได้ (ข้อผิดพลาดในการเชื่อมต่อ)";
+                    historyLoading.classList.remove('hidden');
+                    historyList.innerHTML = '';
+                    historyEmpty.classList.add('hidden');
+                });
+            } else {
+                 console.log("Firestore not ready, cannot set up history listener.");
+            }
+        }
+
+        // 4. Render History List
+        function renderHistory(requests) {
+            historyLoading.classList.add('hidden');
+            historyList.innerHTML = ''; // Clear previous items
+
+            if (requests.length === 0) {
+                historyEmpty.classList.remove('hidden');
+                return;
+            }
+
+            historyEmpty.classList.add('hidden');
+
+            requests.forEach(request => {
+                const date = request.createdAt ? request.createdAt.toDate().toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' }) : 'ไม่ระบุ';
+                
+                // *** แสดงผล วันที่ และ เวลา แยกกัน ***
+                const displayDate = request.appointmentDate ? new Date(request.appointmentDate).toLocaleDateString('th-TH', { dateStyle: 'medium' }) : 'ไม่ระบุวัน';
+                const displayTime = request.appointmentTime || 'ไม่ระบุเวลา';
+
+                let statusColor = '';
+                if (request.status === 'ยืนยันแล้ว') {
+                    statusColor = 'bg-green-100 text-green-700';
+                } else if (request.status === 'ยกเลิก') {
+                    statusColor = 'bg-red-100 text-red-700';
+                } else {
+                    statusColor = 'bg-yellow-100 text-yellow-700';
+                }
+
+                const itemHtml = `
+                    <div class="p-4 border border-pink-200 rounded-lg shadow-sm hover:shadow-md transition duration-200 bg-pink-50">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-bold text-pink-primary">${request.hospital}</h4>
+                            <span class="text-xs font-semibold px-3 py-1 rounded-full ${statusColor}">
+                                สถานะ: ${request.status}
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-700 mb-1">
+                            <span class="font-medium">วันนัดหมาย:</span> ${displayDate}
+                        </p>
+                         <p class="text-sm text-gray-700 mb-1">
+                            <span class="font-medium">เวลานัดหมาย:</span> ${displayTime} น.
+                        </p>
+                        <p class="text-sm text-gray-700 mb-1">
+                            <span class="font-medium">ชื่อผู้ลงทะเบียน:</span> ${request.name} ${request.surname}
+                        </p>
+                        <p class="text-sm text-gray-700 mb-1">
+                            <span class="font-medium">ใบนัด:</span> ${request.slipText || 'ไม่มีข้อมูล'}
+                        </p>
+                        <p class="text-xs text-gray-500 mt-2 border-t border-pink-100 pt-2">
+                            ลงทะเบียนเมื่อ: ${date}
+                        </p>
+                    </div>
+                `;
+                historyList.insertAdjacentHTML('beforeend', itemHtml);
+            });
+        }
+
+        // --- Event Listener for Mobile Menu ---
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Initialize view on load
+        window.onload = () => {
+             navigate('home');
+        };
+
+    </script>
+</body>
+</html>
